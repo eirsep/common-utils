@@ -15,6 +15,7 @@ object AlertingActions {
     const val DELETE_WORKFLOW_ACTION_NAME = "cluster:admin/opensearch/alerting/workflow/delete"
     const val GET_FINDINGS_ACTION_NAME = "cluster:admin/opensearch/alerting/findings/get"
     const val ACKNOWLEDGE_ALERTS_ACTION_NAME = "cluster:admin/opendistro/alerting/alerts/ack"
+    const val ACKNOWLEDGE_CHAINED_ALERTS_ACTION_NAME = "cluster:admin/opendistro/alerting/chained_alerts/ack"
 
     @JvmField
     val INDEX_MONITOR_ACTION_TYPE =
@@ -45,4 +46,8 @@ object AlertingActions {
     @JvmField
     val ACKNOWLEDGE_ALERTS_ACTION_TYPE =
         ActionType(ACKNOWLEDGE_ALERTS_ACTION_NAME, ::AcknowledgeAlertResponse)
+
+    @JvmField
+    val ACKNOWLEDGE_CHAINED_ALERTS_ACTION_TYPE =
+        ActionType(ACKNOWLEDGE_CHAINED_ALERTS_ACTION_NAME, ::AcknowledgeAlertResponse)
 }
