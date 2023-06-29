@@ -33,6 +33,8 @@ class GetAlertsResponseTests {
             0L,
             0,
             "monitorId",
+            "workflowId",
+            "",
             "monitorName",
             0L,
             randomUser(),
@@ -61,5 +63,6 @@ class GetAlertsResponseTests {
         assertEquals(1, newReq.alerts.size)
         assertEquals(alert, newReq.alerts[0])
         assertEquals(1, newReq.totalAlerts)
+        assertEquals(newReq.alerts[0].workflowId, "workflowId")
     }
 }
