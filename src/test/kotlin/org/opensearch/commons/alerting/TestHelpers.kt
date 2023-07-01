@@ -515,7 +515,8 @@ fun randomAlert(monitor: Monitor = randomQueryLevelMonitor()): Alert {
         trigger,
         Instant.now().truncatedTo(ChronoUnit.MILLIS),
         null,
-        actionExecutionResults = actionExecutionResults
+        actionExecutionResults = actionExecutionResults,
+
     )
 }
 

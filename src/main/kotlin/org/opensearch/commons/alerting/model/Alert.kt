@@ -42,6 +42,7 @@ data class Alert(
     val actionExecutionResults: List<ActionExecutionResult>,
     val aggregationResultBucket: AggregationResultBucket? = null,
     val executionId: String? = null,
+    val associatedAlertIds: List<String>,
 ) : Writeable, ToXContent {
 
     init {
@@ -59,6 +60,7 @@ data class Alert(
         executionId: String,
         chainedAlertTrigger: ChainedAlertTrigger,
         workflow: Workflow,
+        associatedAlertIds: List<String>,
     ) : this(
         monitorId = NO_ID,
         monitorName = "",
@@ -79,7 +81,8 @@ data class Alert(
         relatedDocIds = emptyList(),
         executionId = executionId,
         workflowId = workflow.id,
-        workflowName = workflow.name
+        workflowName = workflow.name,
+        associatedAlertIds = associatedAlertIds
     )
 
     constructor(
@@ -114,7 +117,8 @@ data class Alert(
         relatedDocIds = emptyList(),
         executionId = executionId,
         workflowId = workflowId ?: "",
-        workflowName = ""
+        workflowName = "",
+        associatedAlertIds = emptyList()
     )
 
     constructor(
@@ -150,7 +154,8 @@ data class Alert(
         relatedDocIds = emptyList(),
         executionId = executionId,
         workflowId = workflowId ?: "",
-        workflowName = ""
+        workflowName = "",
+        associatedAlertIds = emptyList()
     )
 
     constructor(
@@ -187,7 +192,8 @@ data class Alert(
         relatedDocIds = emptyList(),
         executionId = executionId,
         workflowId = workflowId ?: "",
-        workflowName = ""
+        workflowName = "",
+        associatedAlertIds = emptyList()
     )
 
     constructor(
@@ -226,7 +232,8 @@ data class Alert(
         relatedDocIds = relatedDocIds,
         executionId = executionId,
         workflowId = workflowId ?: "",
-        workflowName = ""
+        workflowName = "",
+        associatedAlertIds = emptyList()
     )
 
     enum class State {
@@ -260,7 +267,8 @@ data class Alert(
         severity = sin.readString(),
         actionExecutionResults = sin.readList(::ActionExecutionResult),
         aggregationResultBucket = if (sin.readBoolean()) AggregationResultBucket(sin) else null,
-        executionId = sin.readOptionalString()
+        executionId = sin.readOptionalString(),
+        associatedAlertIds = sin.readStringList()
     )
 
     fun isAcknowledged(): Boolean = (state == State.ACKNOWLEDGED)
@@ -297,6 +305,7 @@ data class Alert(
             out.writeBoolean(false)
         }
         out.writeOptionalString(executionId)
+        out.writeStringCollection(associatedAlertIds)
     }
 
     companion object {
@@ -324,6 +333,7 @@ data class Alert(
         const val SEVERITY_FIELD = "severity"
         const val ACTION_EXECUTION_RESULTS_FIELD = "action_execution_results"
         const val EXECUTION_ID_FIELD = "execution_id"
+        const val ASSOCIATED_ALERT_IDS_FIELD = "associated_alert_ids"
         const val BUCKET_KEYS = AggregationResultBucket.BUCKET_KEYS
         const val PARENTS_BUCKET_PATH = AggregationResultBucket.PARENTS_BUCKET_PATH
         const val NO_ID = ""
@@ -356,6 +366,7 @@ data class Alert(
             val errorHistory: MutableList<AlertError> = mutableListOf()
             val actionExecutionResults: MutableList<ActionExecutionResult> = mutableListOf()
             var aggAlertBucket: AggregationResultBucket? = null
+            val associatedAlertIds = mutableListOf<String>()
             ensureExpectedToken(XContentParser.Token.START_OBJECT, xcp.currentToken(), xcp)
             while (xcp.nextToken() != XContentParser.Token.END_OBJECT) {
                 val fieldName = xcp.currentName()
@@ -368,7 +379,10 @@ data class Alert(
                     SCHEMA_VERSION_FIELD -> schemaVersion = xcp.intValue()
                     MONITOR_NAME_FIELD -> monitorName = xcp.text()
                     MONITOR_VERSION_FIELD -> monitorVersion = xcp.longValue()
-                    MONITOR_USER_FIELD -> monitorUser = if (xcp.currentToken() == XContentParser.Token.VALUE_NULL) null else User.parse(xcp)
+                    MONITOR_USER_FIELD -> {
+                        monitorUser =
+                            if (xcp.currentToken() == XContentParser.Token.VALUE_NULL) null else User.parse(xcp)
+                    }
                     TRIGGER_ID_FIELD -> triggerId = xcp.text()
                     FINDING_IDS -> {
                         ensureExpectedToken(XContentParser.Token.START_ARRAY, xcp.currentToken(), xcp)
@@ -390,6 +404,12 @@ data class Alert(
                     ACKNOWLEDGED_TIME_FIELD -> acknowledgedTime = xcp.instant()
                     ERROR_MESSAGE_FIELD -> errorMessage = xcp.textOrNull()
                     EXECUTION_ID_FIELD -> executionId = xcp.textOrNull()
+                    ASSOCIATED_ALERT_IDS_FIELD -> {
+                        ensureExpectedToken(XContentParser.Token.START_ARRAY, xcp.currentToken(), xcp)
+                        while (xcp.nextToken() != XContentParser.Token.END_ARRAY) {
+                            associatedAlertIds.add(xcp.text())
+                        }
+                    }
                     ALERT_HISTORY_FIELD -> {
                         ensureExpectedToken(XContentParser.Token.START_ARRAY, xcp.currentToken(), xcp)
                         while (xcp.nextToken() != XContentParser.Token.END_ARRAY) {
@@ -441,7 +461,8 @@ data class Alert(
                 relatedDocIds = relatedDocIds,
                 executionId = executionId,
                 workflowId = workflowId,
-                workflowName = workflowName
+                workflowName = workflowName,
+                associatedAlertIds = associatedAlertIds
             )
         }
 
@@ -467,6 +488,7 @@ data class Alert(
             .field(MONITOR_ID_FIELD, monitorId)
             .field(WORKFLOW_ID_FIELD, workflowId)
             .field(WORKFLOW_NAME_FIELD, workflowName)
+            .field(ASSOCIATED_ALERT_IDS_FIELD, associatedAlertIds)
             .field(SCHEMA_VERSION_FIELD, schemaVersion)
             .field(MONITOR_VERSION_FIELD, monitorVersion)
             .field(MONITOR_NAME_FIELD, monitorName)
@@ -502,6 +524,9 @@ data class Alert(
             END_TIME_FIELD to endTime?.toEpochMilli(),
             ERROR_MESSAGE_FIELD to errorMessage,
             EXECUTION_ID_FIELD to executionId,
+            WORKFLOW_ID_FIELD to workflowId,
+            WORKFLOW_NAME_FIELD to workflowName,
+            ASSOCIATED_ALERT_IDS_FIELD to associatedAlertIds,
             LAST_NOTIFICATION_TIME_FIELD to lastNotificationTime?.toEpochMilli(),
             SEVERITY_FIELD to severity,
             START_TIME_FIELD to startTime.toEpochMilli(),
