@@ -26,7 +26,7 @@ data class DocLevelMonitorInput(
         sin.readOptionalBoolean() // fanoutEnabled
     )
 
-    fun asTemplateArg(): Map<String, Any?> {
+    override fun asTemplateArg(): Map<String, Any> {
         return mapOf(
             DESCRIPTION_FIELD to description,
             INDICES_FIELD to indices,
