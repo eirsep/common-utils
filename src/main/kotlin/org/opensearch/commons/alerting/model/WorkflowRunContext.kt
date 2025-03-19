@@ -42,7 +42,6 @@ data class WorkflowRunContext(
         out.writeOptionalString(chainedMonitorId)
         out.writeMap(matchingDocIdsPerIndex)
         out.writeBoolean(auditDelegateMonitorAlerts)
-        out.writeOptionalStringCollection(findingIds)
     }
 
     override fun toXContent(builder: XContentBuilder, params: ToXContent.Params?): XContentBuilder {

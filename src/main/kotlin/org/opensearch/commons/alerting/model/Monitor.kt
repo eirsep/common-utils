@@ -227,7 +227,6 @@ data class Monitor(
         out.writeBoolean(dataSources != null) // for backward compatibility with pre-existing monitors which don't have datasources field
         dataSources.writeTo(out)
         out.writeOptionalBoolean(deleteQueryIndexInEveryRun)
-        out.writeOptionalBoolean(shouldCreateSingleAlertForFindings)
         out.writeOptionalString(owner)
     }
 

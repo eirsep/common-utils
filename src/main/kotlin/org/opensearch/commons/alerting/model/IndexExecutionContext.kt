@@ -49,7 +49,6 @@ data class IndexExecutionContext(
         out.writeStringCollection(concreteIndexNames)
         out.writeStringCollection(conflictingFields)
         out.writeOptionalStringCollection(docIds)
-        out.writeOptionalStringCollection(findingIds)
     }
 
     override fun toXContent(builder: XContentBuilder?, params: ToXContent.Params?): XContentBuilder {

@@ -43,7 +43,6 @@ data class DocLevelMonitorInput(
         out.writeString(description)
         out.writeStringCollection(indices)
         out.writeCollection(queries)
-        out.writeOptionalBoolean(fanoutEnabled)
     }
 
     override fun toXContent(builder: XContentBuilder, params: ToXContent.Params): XContentBuilder {
