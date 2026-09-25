@@ -139,6 +139,14 @@ class GetMonitorResponseTests {
     }
 
     @Test
+    fun `test toXContent omits the user when there are no roles to show`() {
+        val req = GetMonitorResponse("1234", 1L, 2L, 0L, randomMonitor(), null, emptyList())
+
+        val xContentString = req.toXContent(builder(), includeBackendRoles).string()
+        assertFalse(xContentString.contains("\"user\""))
+    }
+
+    @Test
     fun `test a monitor carrying only backend roles can be parsed back by a client`() {
         val monitor = randomMonitor()
         val monitorJson = monitor.toXContentWithBackendRoles(builder(), ToXContent.EMPTY_PARAMS, listOf("role-1")).string()

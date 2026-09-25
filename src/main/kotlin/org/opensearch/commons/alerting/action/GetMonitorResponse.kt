@@ -115,8 +115,10 @@ class GetMonitorResponse : BaseResponse {
         val monitor = this.monitor
         if (monitor != null) {
             builder.field("monitor")
+            // Nothing to show means nothing is written: no empty user block for a resource that carries no
+            // roles, or whose roles the requester shares none of.
             val visibleBackendRoles = this.visibleBackendRoles
-                ?.takeIf { params.paramAsBoolean(INCLUDE_BACKEND_ROLES_PARAM, false) }
+                ?.takeIf { it.isNotEmpty() && params.paramAsBoolean(INCLUDE_BACKEND_ROLES_PARAM, false) }
             if (visibleBackendRoles != null) {
                 monitor.toXContentWithBackendRoles(builder, params, visibleBackendRoles)
             } else {

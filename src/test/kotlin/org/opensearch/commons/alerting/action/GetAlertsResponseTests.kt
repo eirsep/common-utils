@@ -160,6 +160,15 @@ class GetAlertsResponseTests {
     }
 
     @Test
+    fun `test toXContent omits the monitor user when there are no roles to show`() {
+        val alert = randomAlert()
+        val req = GetAlertsResponse(listOf(alert), 1, mapOf(alert.id to emptyList()))
+
+        val xContentString = req.toXContent(builder(), includeBackendRoles).string()
+        assertFalse(xContentString.contains("monitor_user"))
+    }
+
+    @Test
     fun `test visible backend roles are not written to an older node`() {
         val alert = randomAlert()
         val withRoles = GetAlertsResponse(listOf(alert), 1, mapOf(alert.id to listOf("role-1", "role-2")))

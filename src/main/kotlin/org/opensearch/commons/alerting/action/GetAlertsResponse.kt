@@ -75,7 +75,13 @@ class GetAlertsResponse : BaseResponse {
         builder.startObject()
             .startArray("alerts")
         alerts.forEach { alert ->
-            val visibleBackendRoles = if (includeBackendRoles) this.visibleBackendRoles?.get(alert.id) else null
+            // Nothing to show means nothing is written: no empty monitor_user block for an alert whose
+            // monitor carries no roles, or whose roles the requester shares none of.
+            val visibleBackendRoles = if (includeBackendRoles) {
+                this.visibleBackendRoles?.get(alert.id)?.takeIf { it.isNotEmpty() }
+            } else {
+                null
+            }
             if (visibleBackendRoles != null) {
                 alert.toXContentWithBackendRoles(builder, visibleBackendRoles)
             } else {
