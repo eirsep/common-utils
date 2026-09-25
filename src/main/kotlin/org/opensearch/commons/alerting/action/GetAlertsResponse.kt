@@ -2,6 +2,7 @@ package org.opensearch.commons.alerting.action
 
 import org.opensearch.Version
 import org.opensearch.commons.alerting.model.Alert
+import org.opensearch.commons.alerting.util.IndexUtils.Companion.INCLUDE_BACKEND_ROLES_PARAM
 import org.opensearch.commons.notifications.action.BaseResponse
 import org.opensearch.core.common.io.stream.StreamInput
 import org.opensearch.core.common.io.stream.StreamOutput
@@ -70,10 +71,11 @@ class GetAlertsResponse : BaseResponse {
 
     @Throws(IOException::class)
     override fun toXContent(builder: XContentBuilder, params: ToXContent.Params): XContentBuilder {
+        val includeBackendRoles = params.paramAsBoolean(INCLUDE_BACKEND_ROLES_PARAM, false)
         builder.startObject()
             .startArray("alerts")
         alerts.forEach { alert ->
-            val visibleBackendRoles = this.visibleBackendRoles?.get(alert.id)
+            val visibleBackendRoles = if (includeBackendRoles) this.visibleBackendRoles?.get(alert.id) else null
             if (visibleBackendRoles != null) {
                 alert.toXContentWithBackendRoles(builder, visibleBackendRoles)
             } else {

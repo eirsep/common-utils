@@ -7,6 +7,7 @@ package org.opensearch.commons.alerting.action
 
 import org.opensearch.Version
 import org.opensearch.commons.alerting.model.Monitor
+import org.opensearch.commons.alerting.util.IndexUtils.Companion.INCLUDE_BACKEND_ROLES_PARAM
 import org.opensearch.commons.alerting.util.IndexUtils.Companion._ID
 import org.opensearch.commons.alerting.util.IndexUtils.Companion._PRIMARY_TERM
 import org.opensearch.commons.alerting.util.IndexUtils.Companion._SEQ_NO
@@ -94,6 +95,10 @@ class GetMonitorResponse : BaseResponse {
         }
         if (out.version.onOrAfter(Version.V_3_10_0)) {
             out.writeOptionalStringCollection(visibleBackendRoles)
+            // associatedWorkflows has always been written element by element, with no count, while the
+            // constructor above reads it with readList, which expects one: any stream carrying this response
+            // was unreadable. Write the count on 3.10.0+ streams, leaving older ones exactly as they were.
+            out.writeVInt(associatedWorkflows?.size ?: 0)
         }
         associatedWorkflows?.forEach {
             it.writeTo(out)
@@ -111,6 +116,7 @@ class GetMonitorResponse : BaseResponse {
         if (monitor != null) {
             builder.field("monitor")
             val visibleBackendRoles = this.visibleBackendRoles
+                ?.takeIf { params.paramAsBoolean(INCLUDE_BACKEND_ROLES_PARAM, false) }
             if (visibleBackendRoles != null) {
                 monitor.toXContentWithBackendRoles(builder, params, visibleBackendRoles)
             } else {
